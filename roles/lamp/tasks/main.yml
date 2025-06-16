@@ -8,10 +8,30 @@
     owner: root
     group: root
 
+- name: Ensure HTML subdirectory exists
+  file:
+    path: /opt/lamp/html
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
 - name: Copy Docker Compose file
   template:
     src: lamp-compose.yml.j2
     dest: /opt/lamp/docker-compose.yml
+    mode: '0644'
+
+- name: Deploy Redis test PHP file
+  copy:
+    src: index.php
+    dest: /opt/lamp/html/index.php
+    mode: '0644'
+
+- name: Copy Dockerfile for custom PHP image
+  copy:
+    src: Dockerfile
+    dest: /opt/lamp/Dockerfile
     mode: '0644'
 
 - name: Ensure Docker Compose v2 stack is up

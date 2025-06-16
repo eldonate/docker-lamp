@@ -2,11 +2,13 @@ version: "3.8"
 
 services:
   web:
-    image: php:8.2-apache
+    build:
+      context: /opt/lamp
+      dockerfile: Dockerfile
     ports:
       - "80:80"
     volumes:
-      - web_data:/var/www/html
+      - /opt/lamp/html:/var/www/html
     depends_on:
       - db
       - redis
@@ -31,6 +33,5 @@ services:
       - redis_data:/data
 
 volumes:
-  web_data:
   db_data:
   redis_data:
