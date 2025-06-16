@@ -1,0 +1,6 @@
+- name: Setup Docker on LAMP host
+  hosts: lamp
+  become: true
+
+  roles:
+   - docker
