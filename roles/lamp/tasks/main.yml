@@ -1,0 +1,19 @@
+# roles/lamp/tasks/main.yml
+
+- name: Ensure project directory exists
+  file:
+    path: /opt/lamp
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Copy Docker Compose file
+  template:
+    src: lamp-compose.yml.j2
+    dest: /opt/lamp/docker-compose.yml
+    mode: '0644'
+
+- name: Ensure Docker Compose v2 stack is up
+  community.docker.docker_compose_v2:
+    project_src: /opt/lamp

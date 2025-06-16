@@ -1,6 +1,10 @@
-- name: Setup Docker on LAMP host
+- name: Provision LAMP stack
   hosts: lamp
   become: true
 
+  vars_files:
+    - vault/secrets.yml
+
   roles:
-   - docker
+    - docker
+    - lamp

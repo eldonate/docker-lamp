@@ -22,7 +22,7 @@
     state: present
     filename: docker
 
-- name: Install Docker packages
+- name: Install Docker Engine packages
   apt:
     name:
       - docker-ce
@@ -31,8 +31,24 @@
     state: present
     update_cache: yes
 
+- name: Install Docker Compose v2 plugin
+  apt:
+    name: docker-compose-plugin
+    state: present
+    update_cache: yes
+
 - name: Ensure Docker service is enabled and running
   systemd:
     name: docker
     enabled: true
     state: started
+
+- name: Verify Docker Compose v2 is available
+  command: docker compose version
+  register: compose_version
+  changed_when: false
+  failed_when: compose_version.rc != 0
+
+- name: Show Docker Compose version
+  debug:
+    msg: "{{ compose_version.stdout }}"
