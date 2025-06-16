@@ -1,2 +1,2 @@
 # docker-lamp
-LAMP stack running on dockers
+LAMP stack running on docker
