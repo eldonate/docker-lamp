@@ -1,10 +1,19 @@
-- name: Provision LAMP stack
+- name: Provision full Docker-based LAMP + HTTPS stack
   hosts: lamp
   become: true
 
   vars_files:
-    - vault/secrets.yml
+    - group_vars/local_all.yaml 
+    - vault/secrets.yml           
+
+  pre_tasks:
+    - name: Ensure Docker network for proxy exists
+      community.docker.docker_network:
+        name: proxy-tier
+        driver: bridge
+        state: present
 
   roles:
     - docker
     - lamp
+    - proxy
