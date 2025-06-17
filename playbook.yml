@@ -6,14 +6,16 @@
     - group_vars/local_all.yaml 
     - vault/secrets.yml           
 
-  pre_tasks:
+  roles:
+    - docker
+    - proxy
+    - lamp
+    
+
+  # now that docker & lamp are in place, create the network
+  post_tasks:
     - name: Ensure Docker network for proxy exists
       community.docker.docker_network:
         name: proxy-tier
         driver: bridge
         state: present
-
-  roles:
-    - docker
-    - lamp
-    - proxy
