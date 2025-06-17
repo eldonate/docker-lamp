@@ -11,7 +11,7 @@ services:
       - db
       - redis
     environment:
-      VIRTUAL_HOST: "{{ virtual_host }}"
+      VIRTUAL_HOST:    "{{ virtual_host }}"
       LETSENCRYPT_HOST: "{{ virtual_host }}"
       LETSENCRYPT_EMAIL: "{{ letsencrypt_email }}"
     networks:
@@ -22,11 +22,16 @@ services:
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"
-      MYSQL_DATABASE: "{{ mysql_database }}"
-      MYSQL_USER: "{{ mysql_user }}"
-      MYSQL_PASSWORD: "{{ mysql_password }}"
+      MYSQL_DATABASE:      "{{ mysql_database }}"
+      MYSQL_USER:          "{{ mysql_user }}"
+      MYSQL_PASSWORD:      "{{ mysql_password }}"
+      # For TLS encryption, you could add:
+      # MYSQL_SSL_CERT:    /run/secrets/db_server_cert
+      # MYSQL_SSL_KEY:     /run/secrets/db_server_key
     volumes:
       - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
     networks:
       - proxy-tier
 
