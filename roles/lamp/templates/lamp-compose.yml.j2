@@ -1,53 +1,63 @@
+# roles/lamp/templates/lamp-compose.yml.j2
 version: "3.8"
 
 services:
-  web:
+  php:
     build:
-      context: /opt/lamp
+      context: .
       dockerfile: Dockerfile
+    container_name: lamp-php
     volumes:
-      - /opt/lamp/html:/var/www/html
+      - ./html:/var/www/html
+      - ./php-fpm/www.conf:/usr/local/etc/php-fpm.d/www.conf:ro
+      - ./mysql/conf.d:/etc/mysql/conf.d:ro
+    networks:
+      - proxy-tier
+
+  lamp-nginx:
+    image: nginx:1.27-alpine
+    container_name: lamp-nginx
     depends_on:
-      - db
-      - redis
+      - php
+    volumes:
+      - ./html:/var/www/html:ro
+      - ./nginx/conf.d:/etc/nginx/conf.d:ro
     environment:
       VIRTUAL_HOST:    "{{ virtual_host }}"
       LETSENCRYPT_HOST: "{{ virtual_host }}"
       LETSENCRYPT_EMAIL: "{{ letsencrypt_email }}"
+      VIRTUAL_PORT:     "80"
     networks:
       - proxy-tier
 
   db:
     image: mariadb:10.6
+    container_name: lamp-db
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: "{{ mysql_root_password }}"
       MYSQL_DATABASE:      "{{ mysql_database }}"
       MYSQL_USER:          "{{ mysql_user }}"
       MYSQL_PASSWORD:      "{{ mysql_password }}"
-      # For TLS encryption, you could add:
-      # MYSQL_SSL_CERT:    /run/secrets/db_server_cert
-      # MYSQL_SSL_KEY:     /run/secrets/db_server_key
     volumes:
       - db_data:/var/lib/mysql
-      - /opt/lamp/mysql/conf.d:/etc/mysql/conf.d:ro
-    ports:
-      - "3306:3306"
+      - ./mysql/conf.d:/etc/mysql/conf.d:ro
     networks:
       - proxy-tier
 
   redis:
     image: redis:7.2-alpine
+    container_name: lamp-redis
     restart: always
     volumes:
       - redis_data:/data
     networks:
       - proxy-tier
 
-volumes:
-  db_data:
-  redis_data:
-
 networks:
   proxy-tier:
     external: true
+
+volumes:
+  db_data:
+  redis_data:

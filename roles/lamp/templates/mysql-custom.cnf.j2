@@ -1,14 +1,9 @@
 # roles/lamp/templates/mysql-custom.cnf.j2
-
-[mysqld]
-# InnoDB buffer pool size ~50–70% of system RAM
-innodb_buffer_pool_size = 1G
-# Bigger redo logs for bulk writes
-innodb_log_file_size = 512M
-# Flush less frequently for better throughput
-innodb_flush_log_at_trx_commit = 2
-
-# Connection / threading
-max_connections     = 200
-thread_cache_size   = 50
-
+ [mysqld]
+ innodb_buffer_pool_size       = 1G
+ innodb_log_file_size          = 512M
+ innodb_flush_log_at_trx_commit = 2
+#
+ max_connections     = 200
+ thread_cache_size   = 50
+# 

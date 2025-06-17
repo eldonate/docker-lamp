@@ -1,59 +1,60 @@
+# roles/lamp/tasks/main.yml
 ---
-- name: Ensure project directory exists
+- name: Ensure /opt/lamp hierarchy exists
   file:
-    path: /opt/lamp
+    path: "{{ item }}"
     state: directory
     mode: '0755'
-    owner: root
-    group: root
+  loop:
+    - /opt/lamp
+    - /opt/lamp/html
+    - /opt/lamp/mysql/conf.d
+    - /opt/lamp/php-fpm
+    - /opt/lamp/nginx/conf.d
 
-- name: Ensure HTML subdirectory exists
-  file:
-    path: /opt/lamp/html
-    state: directory
-    mode: '0755'
-    owner: root
-    group: root
-
-- name: Copy Dockerfile for custom PHP image
+- name: Copy PHP-FPM Dockerfile
   copy:
     src: Dockerfile
     dest: /opt/lamp/Dockerfile
     mode: '0644'
 
-- name: Copy Docker Compose file
-  template:
-    src: lamp-compose.yml.j2
-    dest: /opt/lamp/docker-compose.yml
-    mode: '0644'
-
-- name: Deploy database test PHP file
+- name: Deploy PHP-FPM pool config
   copy:
-    src: file2.php
-    dest: /opt/lamp/html/file2.php
+    src: www.conf
+    dest: /opt/lamp/php-fpm/www.conf
     mode: '0644'
-
-- name: Remove any existing lamp-web image
-  community.docker.docker_image:
-    name: lamp-web
-    state: absent
-    force_absent: yes
-    
-- name: Ensure custom MySQL config dir exists
-  file:
-    path: /opt/lamp/mysql/conf.d
-    state: directory
-    mode: '0755'
-    owner: root
-    group: root
 
 - name: Deploy custom MySQL tuning config
   template:
     src: mysql-custom.cnf.j2
     dest: /opt/lamp/mysql/conf.d/custom.cnf
-    mode: '0644'    
+    mode: '0644'
 
-- name: Bring up LAMP stack (rebuild web image every time)
+- name: Deploy Nginx site config
+  template:
+    src: nginx-site.conf.j2
+    dest: /opt/lamp/nginx/conf.d/default.conf
+    mode: '0644'
+
+- name: Deploy Compose template
+  template:
+    src: lamp-compose.yml.j2
+    dest: /opt/lamp/docker-compose.yml
+    mode: '0644'
+
+- name: Deploy performance test script
+  copy:
+    src: perf.php
+    dest: /opt/lamp/html/perf.php
+    mode: '0644'
+
+- name: Prune old PHP image
+  community.docker.docker_image:
+    name: lamp-php
+    state: absent
+    force_absent: yes
+
+- name: Bring up new stack (build & recreate)
   community.docker.docker_compose_v2:
     project_src: /opt/lamp
     build: always

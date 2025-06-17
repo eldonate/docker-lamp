@@ -1,3 +1,5 @@
+# roles/lamp/templates/nginx-site.conf.j2
+
 server {
     listen       80;
     server_name  {{ virtual_host }};
@@ -5,15 +7,42 @@ server {
     root   /var/www/html;
     index  index.php index.html;
 
+    # Main request handler
     location / {
         try_files $uri $uri/ /index.php?$args;
     }
 
+    # PHP via FastCGI to our PHP-FPM container
     location ~ \.php$ {
-        include fastcgi_params;
         fastcgi_pass   php:9000;
         fastcgi_index  index.php;
+        include        fastcgi_params;
         fastcgi_param  SCRIPT_FILENAME  $document_root$fastcgi_script_name;
-    }
-}
 
+        # Tuning buffers
+        fastcgi_buffers       16 16k;
+        fastcgi_buffer_size   32k;
+    }
+
+    # Cache static assets
+    location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+        expires 7d;
+        add_header Cache-Control "public";
+    }
+
+    # Security headers
+    add_header X-Frame-Options       "SAMEORIGIN";
+    add_header X-Content-Type-Options "nosniff";
+    add_header X-XSS-Protection      "1; mode=block";
+
+    # Prevent access to hidden files
+    location ~ /\. {
+        deny all;
+        access_log off;
+        log_not_found off;
+    }
+
+    # Keep-alive tuning
+    keepalive_timeout   65;
+    keepalive_requests  100;
+}
