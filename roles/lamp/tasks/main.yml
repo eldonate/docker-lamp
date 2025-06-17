@@ -38,6 +38,20 @@
     name: lamp-web
     state: absent
     force_absent: yes
+    
+- name: Ensure custom MySQL config dir exists
+  file:
+    path: /opt/lamp/mysql/conf.d
+    state: directory
+    mode: '0755'
+    owner: root
+    group: root
+
+- name: Deploy custom MySQL tuning config
+  template:
+    src: mysql-custom.cnf.j2
+    dest: /opt/lamp/mysql/conf.d/custom.cnf
+    mode: '0644'    
 
 - name: Bring up LAMP stack (rebuild web image every time)
   community.docker.docker_compose_v2:

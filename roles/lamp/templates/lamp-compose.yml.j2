@@ -30,6 +30,7 @@ services:
       # MYSQL_SSL_KEY:     /run/secrets/db_server_key
     volumes:
       - db_data:/var/lib/mysql
+      - /opt/lamp/mysql/conf.d:/etc/mysql/conf.d:ro
     ports:
       - "3306:3306"
     networks:
